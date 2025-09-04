@@ -1,22 +1,19 @@
 package com.netease.lowcode.freemarker.util;
 
 import com.netease.lowcode.core.annotation.NaslLogic;
+
 import com.netease.lowcode.freemarker.dto.CreateDocxRequest;
 import com.netease.lowcode.freemarker.dto.CreateRequest;
 import com.netease.lowcode.freemarker.dto.DownloadResponseDTO;
 import com.netease.lowcode.freemarker.dto.UploadResponseDTO;
 import com.netease.lowcode.freemarker.validators.CreateDocxRequestValidator;
 import com.netease.lowcode.freemarker.validators.CreateRequestValidator;
+
 import com.spire.xls.FileFormat;
-import com.spire.xls.Workbook;
 import freemarker.cache.URLTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,6 +25,11 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
+import com.spire.xls.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 public class FreeMarkerUtil {
 
@@ -83,10 +85,14 @@ public class FreeMarkerUtil {
             workbook.loadFromXml(byteArrayInputStream);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.saveToStream(outputStream, FileFormat.Version2016);
+            ZipSecureFile.setMinInflateRatio(0.001);
 
             //
             org.apache.poi.ss.usermodel.Workbook poiWorkbook = WorkbookFactory.create(new ByteArrayInputStream(outputStream.toByteArray()));
             poiWorkbook.removeSheetAt(poiWorkbook.getSheetIndex("Evaluation Warning"));
+            if (poiWorkbook.getNumberOfSheets() > 0) {
+                poiWorkbook.setActiveSheet(0);
+            }
             ByteArrayOutputStream tmpOutputStream = new ByteArrayOutputStream();
             poiWorkbook.write(tmpOutputStream);
 
